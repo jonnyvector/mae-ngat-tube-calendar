@@ -81,35 +81,56 @@ button, select { font: inherit; color: inherit; }
 .season text { font: 11px var(--f-head); fill: var(--ink-muted); }
 .note { font-size: 0.88rem; color: var(--ink-muted); margin: 0; }
 
-/* controls + legend */
-.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; }
-.views { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.views button, .views select { font: 600 0.88rem var(--font-body); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; color: var(--ink); }
-.views select { font-family: var(--font-data); font-weight: 500; }
-.views button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.82rem; color: var(--muted); }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
-.sw { width: 15px; height: 15px; border-radius: 4px; display: inline-block; }
-
 /* calendar */
-.work { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; align-items: start; }
-@media (max-width: 980px) { .work { grid-template-columns: minmax(0, 1fr); } }
-.months { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 20px 16px; }
-.month h2 { font-size: 1rem; font-weight: 600; display: flex; flex-wrap: wrap; gap: 0 10px; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-.month h2 small { font: 400 0.74rem var(--font-data); color: var(--muted); }
-.grid7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-.dow { font-size: 0.68rem; color: var(--muted); text-align: center; }
-.dow.we { color: var(--tube); font-weight: 600; }
-.day { aspect-ratio: 1; max-width: 100%; border-radius: 6px; border: 1px solid transparent; background: var(--no); color: var(--muted);
-  font: 500 0.72rem var(--font-data); display: grid; place-items: center; cursor: pointer; position: relative; padding: 0; }
-.day.yes { background: var(--yes); color: var(--on-yes); }
-.day.good { background: var(--good); color: var(--on-yes); border: 1px dashed color-mix(in srgb, var(--ink) 35%, transparent); }
-.day.maybe { background: repeating-linear-gradient(135deg, var(--maybe) 0 4px, color-mix(in srgb, var(--maybe) 55%, var(--surface)) 4px 7px); color: var(--ink); border: 1px dashed color-mix(in srgb, var(--ink) 30%, transparent); }
-.day.unlikely { border: 1px dashed color-mix(in srgb, var(--ink) 18%, transparent); }
-.day.none { background: transparent; border: 1px solid var(--line); cursor: default; opacity: .6; }
-.day.we:not(.none)::after { content: ""; position: absolute; left: 25%; right: 25%; bottom: 3px; height: 2px; border-radius: 2px; background: var(--tube); opacity: .75; }
-.day.today { box-shadow: 0 0 0 2px var(--tube); }
-.day.sel { box-shadow: 0 0 0 2px var(--ink); }
+.cal { display: grid; gap: 14px; }
+.cal-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.views { display: flex; flex-wrap: wrap; gap: 8px; }
+.legend { display: grid; gap: 10px; }
+.legend summary { justify-self: start; list-style: none; }
+.legend summary::-webkit-details-marker { display: none; }
+.legend summary::after { content: "▾"; }
+.legend[open] summary::after { content: "▴"; }
+.legend-cells { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 0.88rem; }
+.legend-cells span { display: inline-flex; align-items: center; gap: 8px; }
+.work { display: grid; gap: 22px; align-items: start; }
+@media (min-width: 980px) { .work { grid-template-columns: minmax(0, 1fr) 380px; } }
+.months { display: grid; gap: 22px 18px; }
+@media (min-width: 980px) { .months { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); } }
+.month { padding: 14px; gap: 8px; }
+.mhead { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.mhead h2 { font: 400 1.15rem var(--f-head); text-align: center; }
+.mhead small { display: block; font: 400 0.8rem var(--f-body); color: var(--ink-muted); }
+.mstep { width: 44px; justify-content: center; padding: 0; }
+.mstep:disabled { opacity: .35; cursor: default; }
+@media (min-width: 980px) { .mstep { display: none; } .mhead { grid-template-columns: minmax(0, 1fr); } .mhead h2 { text-align: left; } }
+.grid7 { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px 4px; padding: 6px 4px; border-radius: 10px;
+  background: linear-gradient(to right, var(--weekend) 0 calc(100% / 7), transparent calc(100% / 7) calc(600% / 7), var(--weekend) calc(600% / 7)); }
+.dow { font: 400 0.75rem var(--f-head); text-align: center; color: var(--ink-muted); }
+.dow.we { color: var(--ink); }
+.day { aspect-ratio: 1; width: 100%; max-width: 52px; justify-self: center; border-radius: 10px; border: 2px solid transparent; background: transparent; color: var(--ink);
+  display: grid; place-content: center; justify-items: center; font: 400 1rem/1.05 var(--f-head); font-style: normal; position: relative; padding: 0; cursor: pointer; }
+.day em { font: 400 0.62rem/1 var(--f-head); font-style: normal; }
+.day.yes { background: var(--river); color: var(--card); border-color: var(--ink); font-weight: 600; }
+.day.yes::before { content: ""; position: absolute; top: -7px; right: -7px; width: 18px; height: 18px; background: url(img/tube.webp) center / contain no-repeat; }
+.day.no { border-color: var(--sand); color: var(--ink-muted); }
+.day.good { background: var(--river-tint); border: 2px dashed var(--river); }
+.day.good em { color: var(--river-ink); }
+.day.maybe { background: var(--river-faint); border: 2px dashed #9CCFC8; }
+.day.maybe em, .day.unlikely em { color: var(--ink-muted); }
+.day.unlikely { border: 2px dashed var(--sand); color: var(--ink-muted); }
+.day.none { color: var(--sand); cursor: default; }
+.day.today::after { content: "TODAY"; position: absolute; top: -9px; left: 50%; translate: -50% 0; font: 400 0.52rem/1 var(--f-head); letter-spacing: 0.08em; background: var(--ink); color: var(--card); padding: 3px 4px; border-radius: 4px; }
+.day.sel { outline: 3px solid var(--ink); outline-offset: 2px; }
+@media (max-width: 979px) { .months .month:not(.on) { display: none; } }
+.dots { display: flex; justify-content: center; gap: 2px; }
+.dot { width: 26px; height: 44px; border: 0; background: transparent; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.dot i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); background: var(--card); }
+.dot.yes i { background: var(--river); } .dot.good i { background: var(--river-tint); } .dot.maybe i { background: var(--river-faint); }
+.dot.no i, .dot.unlikely i { background: var(--sand); }
+.dot[aria-current="true"] i { outline: 3px solid var(--ink); outline-offset: 2px; }
+@media (min-width: 980px) { .dots { display: none; } }
+@media (prefers-reduced-motion: no-preference) { .day:not(.none):hover { transform: scale(1.08); } .day { transition: transform .12s; } }
+.legend-cells .day { width: 44px; flex: none; }
 
 /* day sheet */
 .sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: grid; gap: 16px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); min-width: 0; }
@@ -160,24 +181,32 @@ footer p { margin: 0; }
     </aside>
   </div>
 
-  <div class="controls">
-    <div class="views" role="group" aria-label="Calendar range">
-      <button type="button" id="v-next" aria-pressed="true">Next 12 months</button>
-      <select id="y-sel" aria-label="Show a year"></select>
+  <section class="cal" aria-labelledby="cal-title">
+    <div class="cal-head">
+      <h2 class="title" id="cal-title">The Float Calendar</h2>
+      <div class="views" role="group" aria-label="Calendar range">
+        <button type="button" class="btn" id="v-next" aria-pressed="true">Next 12 months</button>
+        <select class="btn" id="y-sel" aria-label="Pick a year"></select>
+      </div>
     </div>
-    <div class="legend">
-      <span><i class="sw" style="background:var(--yes)"></i>Tubable</span>
-      <span><i class="sw" style="background:var(--good);outline:1px dashed var(--muted)"></i>Good odds</span>
-      <span><i class="sw" style="background:repeating-linear-gradient(135deg,var(--maybe) 0 4px,var(--surface) 4px 7px);outline:1px dashed var(--muted)"></i>Possible</span>
-      <span><i class="sw" style="background:var(--no)"></i>Too low</span>
-      <span><i class="sw" style="background:var(--tube);height:3px;width:12px"></i>Weekend</span>
+    <details class="legend" id="legend">
+      <summary class="btn">What the colours mean</summary>
+      <p><b>Solid = happened, dashed = forecast. More teal = more likely.</b></p>
+      <div class="legend-cells">
+        <span><i class="day yes">6</i>Tubable</span>
+        <span><i class="day no">5</i>Too low</span>
+        <span><i class="day good">11<em>74%</em></i>Good odds</span>
+        <span><i class="day maybe">14<em>41%</em></i>Possible</span>
+        <span><i class="day unlikely">16<em>12%</em></i>Unlikely</span>
+        <span><i class="day none">19</i>No data</span>
+      </div>
+    </details>
+    <div class="work">
+      <div class="months" id="months" aria-label="Calendar"></div>
+      <div class="backdrop" id="backdrop" hidden></div>
+      <aside class="sheet" id="sheet" tabindex="-1" aria-labelledby="sheet-title"></aside>
     </div>
-  </div>
-
-  <div class="work">
-    <section class="months" id="months" aria-label="Calendar"></section>
-    <aside class="sheet" id="sheet" aria-live="polite"></aside>
-  </div>
+  </section>
 
   <footer id="foot"></footer>
 </div>
@@ -360,25 +389,35 @@ function monthsToShow() {
   return Array.from({ length: 12 }, (_, m) => ({ y: year, m }));
 }
 
+let mi = 0;   // phone: which of the 12 shown months is visible
+const monthIndexOf = s => { const p = parse(s); return monthsToShow().findIndex(x => x.y === p.y && x.m === p.m); };
+
+function dayCell(s, d) {
+  const c = classify(s);
+  if (!c) return `<button type="button" class="day none" disabled aria-label="${s}: no data">${d}</button>`;
+  const label = c.o ? `${s}: ${LABEL[c.kind]}, release ${fmt(c.o.out)}` : `${s}: ${LABEL[c.kind]}, ${pct(c.f.p)}% chance tubable`;
+  const odds = c.f ? `<em>${pct(c.f.p)}%</em>` : "";
+  return `<button type="button" class="day ${c.kind} ${s === latest ? "today" : ""} ${s === selected ? "sel" : ""}" data-d="${s}" aria-label="${label}">${d}${odds}</button>`;
+}
+
 function renderMonths() {
-  let html = "";
-  for (const { y, m } of monthsToShow()) {
+  const list = monthsToShow();
+  mi = stepMonth(mi, 0, list.length);
+  document.getElementById("months").innerHTML = list.map(({ y, m }, k) => {
     const first = new Date(Date.UTC(y, m, 1)).getUTCDay();
     const n = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
-    let yes = 0, obs = 0, good = 0, maybe = 0;
     let cells = ["S","M","T","W","T","F","S"].map((x, i) => `<div class="dow ${i === 0 || i === 6 ? "we" : ""}" aria-hidden="true">${x}</div>`).join("");
     for (let i = 0; i < first; i++) cells += "<div></div>";
-    for (let d = 1; d <= n; d++) {
-      const s = iso(y, m, d), c = classify(s);
-      if (!c) { cells += `<button type="button" class="day none" disabled aria-label="${s}: no data">${d}</button>`; continue; }
-      if (c.o) { obs++; if (c.kind === "yes") yes++; } else if (c.kind === "good") good++; else if (c.kind === "maybe") maybe++;
-      const label = c.o ? `${s}: ${LABEL[c.kind]}, release ${fmt(c.o.out)}` : `${s}: ${LABEL[c.kind]}, ${Math.round(c.f.p * 100)}% chance tubable`;
-      cells += `<button type="button" class="day ${c.kind} ${isWeekend(s) ? "we" : ""} ${s === latest ? "today" : ""} ${s === selected ? "sel" : ""}" data-d="${s}" aria-label="${label}">${d}</button>`;
-    }
-    const tag = [obs ? `${yes} tubable` : "", good ? `${good} good` : "", maybe ? `${maybe} possible` : ""].filter(Boolean).join(" · ") || (obs ? "" : "unlikely");
-    html += `<div class="month"><h2>${MONTHS[m]} ${y}<small>${tag}</small></h2><div class="grid7">${cells}</div></div>`;
-  }
-  document.getElementById("months").innerHTML = html;
+    for (let d = 1; d <= n; d++) cells += dayCell(iso(y, m, d), d);
+    return `<div class="month card ${k === mi ? "on" : ""}" data-k="${k}">
+      <div class="mhead">
+        <button type="button" class="btn mstep" data-step="-1" aria-label="Previous month" ${k === 0 ? "disabled" : ""}>◀</button>
+        <h2>${MONTHS[m]} ${y}<small>${monthTag(monthStats(y, m))}</small></h2>
+        <button type="button" class="btn mstep" data-step="1" aria-label="Next month" ${k === list.length - 1 ? "disabled" : ""}>▶</button>
+      </div>
+      <div class="grid7">${cells}</div></div>`;
+  }).join("") + `<nav class="dots" aria-label="Jump to month">${list.map(({ y, m }, k) =>
+    `<button type="button" class="dot ${monthMood(monthStats(y, m))}" data-k="${k}" aria-label="${MONTHS[m]} ${y}" ${k === mi ? 'aria-current="true"' : ""}><i></i></button>`).join("")}</nav>`;
 }
 
 function barsSVG(rows, s) {
@@ -451,8 +490,8 @@ function renderFoot() {
 function select(s) {
   selected = s;
   if (view === "year") year = parse(s).y;
+  const k = monthIndexOf(s); if (k >= 0) mi = k;
   render();
-  if (window.matchMedia("(max-width: 980px)").matches) document.getElementById("sheet").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function render() {
@@ -466,11 +505,25 @@ function render() {
   const y0 = parse(hist.start).y, y1 = parse(D.forecast[D.forecast.length - 1].date).y;
   sel.insertAdjacentHTML("beforeend", `<option value="" disabled>Year…</option>`);
   for (let y = y1; y >= y0; y--) sel.insertAdjacentHTML("beforeend", `<option value="${y}">${y}</option>`);
-  sel.addEventListener("change", () => { view = "year"; year = +sel.value; render(); });
-  document.getElementById("v-next").addEventListener("click", () => { view = "next"; render(); });
-  document.getElementById("months").addEventListener("click", ev => { const b = ev.target.closest(".day[data-d]"); if (b) select(b.dataset.d); });
+  sel.addEventListener("change", () => { view = "year"; year = +sel.value; mi = 0; render(); });
+  document.getElementById("v-next").addEventListener("click", () => { view = "next"; mi = Math.max(0, monthIndexOf(latest)); render(); });
+  const months = document.getElementById("months");
+  months.addEventListener("click", ev => {
+    const step = ev.target.closest(".mstep"), dot = ev.target.closest(".dot"), day = ev.target.closest(".day[data-d]");
+    if (step) { mi = stepMonth(mi, +step.dataset.step); renderMonths(); months.querySelector(`.month.on .mstep[data-step="${step.dataset.step}"]`)?.focus(); }
+    else if (dot) { mi = +dot.dataset.k; renderMonths(); }
+    else if (day) openDay(day.dataset.d, day);
+  });
+  let t0 = null;
+  months.addEventListener("touchstart", ev => { const t = ev.touches[0]; t0 = { x: t.clientX, y: t.clientY }; }, { passive: true });
+  months.addEventListener("touchend", ev => {
+    if (!t0) return;
+    const t = ev.changedTouches[0], dx = t.clientX - t0.x, dy = t.clientY - t0.y; t0 = null;
+    if (isSwipe(dx, dy)) { mi = stepMonth(mi, dx < 0 ? 1 : -1); renderMonths(); }
+  }, { passive: true });
   document.getElementById("tickets").addEventListener("click", ev => { const b = ev.target.closest(".ticket"); if (b) { view = "next"; openDay(b.dataset.d, b); } });
   document.getElementById("hero").addEventListener("click", ev => { const b = ev.target.closest(".cta"); if (b) { view = "next"; openDay(b.dataset.d, b); } });
+  mi = Math.max(0, monthIndexOf(latest));
   renderHero(); renderFloats(); renderSeason(); renderFoot(); render();
 })();
 </script>
