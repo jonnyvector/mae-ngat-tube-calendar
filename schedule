@@ -1,0 +1,21 @@
+#!/bin/sh
+# Turn the twice-daily auto-update on or off.  Usage: ./schedule on | off | status
+set -eu
+cd "$(dirname "$0")"
+LABEL=com.jonnyhicks.maengat
+DEST="$HOME/Library/LaunchAgents/$LABEL.plist"
+case "${1:-status}" in
+  on)
+    cp "launchd/$LABEL.plist" "$DEST"
+    launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
+    launchctl bootstrap "gui/$(id -u)" "$DEST"
+    echo "Auto-update on: 09:45 and 17:45 daily. Log: .cache/publish.log" ;;
+  off)
+    launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
+    rm -f "$DEST"
+    echo "Auto-update off." ;;
+  status)
+    launchctl print "gui/$(id -u)/$LABEL" >/dev/null 2>&1 && echo "Auto-update is on." || echo "Auto-update is off."
+    [ -f .cache/publish.log ] && tail -n 5 .cache/publish.log || true ;;
+  *) echo "Usage: ./schedule on | off | status"; exit 1 ;;
+esac

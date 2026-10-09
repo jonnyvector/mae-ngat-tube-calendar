@@ -1,0 +1,28 @@
+#!/bin/sh
+# Daily update, all on this Mac: fetch new dam/weather data, rebuild the tubing calendar,
+# save the data to GitHub (main) and publish the page (gh-pages branch -> GitHub Pages).
+# Run by launchd twice a day (see launchd/com.jonnyhicks.maengat.plist); safe to run by hand.
+set -eu
+cd "$(dirname "$0")"
+PY=.venv/bin/python
+echo "== $(date '+%F %T') publish"
+
+python3 scripts/fetch_rid.py
+python3 scripts/fetch_weather.py || echo "weather/ENSO update failed; keeping previous files"
+if [ "$(date +%u)" = 1 ] || [ ! -f data/backtest.json ]; then
+  $PY scripts/backtest.py   # weekly re-score; the numbers barely move day to day
+fi
+$PY scripts/build_app.py
+
+git add data
+git diff --cached --quiet || git commit -q -m "Data update $(date +%F)"
+git push -q origin main
+
+SITE=.cache/gh-pages
+[ -d "$SITE" ] || git worktree add -q "$SITE" gh-pages
+cp app/index.html "$SITE/index.html"
+touch "$SITE/.nojekyll"
+git -C "$SITE" add -A
+git -C "$SITE" diff --cached --quiet || git -C "$SITE" commit -q -m "Publish $(date +%F)"
+git -C "$SITE" push -q origin gh-pages
+echo "published https://jonnyvector.github.io/mae-ngat-tube-calendar/"
