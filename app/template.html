@@ -163,6 +163,8 @@ footer p { margin: 0; }
 
 <script>
 const D = /*__DATA__*/null;
+// logic:start
+// exports: T, classify, observed, weekendDays, sameDayHistory, reliability, LABEL, parse, utc, iso, isWeekend, fmt, toRiver, short, longDate
 const T = D.thresholds;
 const DAY = 86400000;
 const hist = D.history;
@@ -200,6 +202,32 @@ function classify(s) {
 }
 const LABEL = { yes: "Tubable", no: "Too low", good: "Good odds", maybe: "Possible", unlikely: "Unlikely" };
 
+function weekendDays(a, b) {
+  let n = 0;
+  for (let t = utc(a); t <= utc(b); t += DAY) if ([0, 6].includes(new Date(t).getUTCDay())) n++;
+  return n;
+}
+
+function sameDayHistory(s) {
+  const p = parse(s), rows = [];
+  for (let y = parse(hist.start).y; y <= parse(latest).y; y++) {
+    const d = p.m === 1 && p.d === 29 ? iso(y, 1, 28) : iso(y, p.m, p.d);
+    const o = observed(d);
+    if (o && !o.derived) rows.push({ y, ...o, enso: ensoFor(d) });
+  }
+  return rows;
+}
+
+function reliability(s, c) {
+  if (!D.backtest) return "";
+  const lead = Math.round((utc(s) - utc(latest)) / DAY);
+  const L = D.backtest.leads.reduce((a, b) => Math.abs(b.lead_days - lead) < Math.abs(a.lead_days - lead) ? b : a);
+  const r = L.band_rate[c.kind === "good" ? "good" : c.kind === "maybe" ? "possible" : "unlikely"];
+  const far = lead > 45 ? " This far ahead it mostly reflects the usual pattern for the date, so check back closer to the day." : "";
+  return `${lead} day${lead === 1 ? "" : "s"} ahead. In tests on ${D.backtest.years ? D.backtest.years.join("–") : "past years"}, “${LABEL[c.kind].toLowerCase()}” days at this range turned out tubable ${r == null ? "–" : Math.round(r * 100) + "%"} of the time.${far}`;
+}
+// logic:end
+
 function gaugeSVG(value, high) {
   const W = 420, H = 58, x0 = 12, x1 = W - 12, max = 2.5;
   const x = v => x0 + Math.min(v, max) / max * (x1 - x0);
@@ -223,12 +251,6 @@ function renderAnswer() {
     <p>The dam is releasing <b class="num">${fmt(n.outflow)}</b> million m³ a day${n.tubable ? `, about <b class="num">${fmt(toRiver(n.outflow), 1)}</b> m³/s into the river` : `, most of it into the irrigation canals`}. The river is tubable from <b class="num">${T.tube}</b>. ${next}</p>
     <div class="gauge">${gaugeSVG(n.outflow)}</div>
     <p class="muted" style="font-size:.85rem">Dam ${fmt(n.pct, 0)}% full${D.enso_now ? ` · Pacific: ${D.enso_now.phase.replace("_", " ")} (${D.enso_now.oni > 0 ? "+" : ""}${D.enso_now.oni.toFixed(1)})` : ""}</p>`;
-}
-
-function weekendDays(a, b) {
-  let n = 0;
-  for (let t = utc(a); t <= utc(b); t += DAY) if ([0, 6].includes(new Date(t).getUTCDay())) n++;
-  return n;
 }
 
 function renderWindows() {
@@ -287,16 +309,6 @@ function renderMonths() {
   document.getElementById("months").innerHTML = html;
 }
 
-function sameDayHistory(s) {
-  const p = parse(s), rows = [];
-  for (let y = parse(hist.start).y; y <= parse(latest).y; y++) {
-    const d = p.m === 1 && p.d === 29 ? iso(y, 1, 28) : iso(y, p.m, p.d);
-    const o = observed(d);
-    if (o && !o.derived) rows.push({ y, ...o, enso: ensoFor(d) });
-  }
-  return rows;
-}
-
 function barsSVG(rows, s) {
   const W = 340, H = 124, padL = 30, padB = 18, padT = 8;
   const max = Math.max(2, ...rows.map(r => r.out));
@@ -315,15 +327,6 @@ function barsSVG(rows, s) {
     if (i % 3 === 0 || i === rows.length - 1) g += `<text x="${x + bw / 2}" y="${H - 4}" text-anchor="middle">${String(r.y).slice(2)}</text>`;
   });
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Release on this date in each past year, with the tube line">${g}</svg>`;
-}
-
-function reliability(s, c) {
-  if (!D.backtest) return "";
-  const lead = Math.round((utc(s) - utc(latest)) / DAY);
-  const L = D.backtest.leads.reduce((a, b) => Math.abs(b.lead_days - lead) < Math.abs(a.lead_days - lead) ? b : a);
-  const r = L.band_rate[c.kind === "good" ? "good" : c.kind === "maybe" ? "possible" : "unlikely"];
-  const far = lead > 45 ? " This far ahead it mostly reflects the usual pattern for the date, so check back closer to the day." : "";
-  return `${lead} day${lead === 1 ? "" : "s"} ahead. In tests on ${D.backtest.years ? D.backtest.years.join("–") : "past years"}, “${LABEL[c.kind].toLowerCase()}” days at this range turned out tubable ${r == null ? "–" : Math.round(r * 100) + "%"} of the time.${far}`;
 }
 
 function renderSheet() {
