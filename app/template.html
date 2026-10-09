@@ -169,6 +169,13 @@ tr.hl td { background: var(--weekend); }
 .pill { display: inline-block; padding: 0 8px; border-radius: 999px; font: 600 0.75rem var(--f-data); border: 1.5px solid var(--ink); }
 .pill.yes { background: var(--river); color: var(--card); }
 .pill.no { background: var(--sand); color: var(--ink); }
+.foot { display: grid; gap: 16px; justify-items: center; }
+.how { width: 100%; max-width: 78ch; font-size: 0.92rem; }
+.how summary { justify-self: start; list-style: none; margin-bottom: 12px; }
+.how p + p { margin-top: 10px; }
+.how summary::-webkit-details-marker { display: none; }
+.sign { display: grid; justify-items: center; gap: 4px; color: var(--ink-muted); font-size: 0.85rem; }
+.sign .rat { width: 120px; }
 </style>
 
 <div class="wrap">
@@ -212,7 +219,7 @@ tr.hl td { background: var(--weekend); }
     </div>
   </section>
 
-  <footer id="foot"></footer>
+  <footer class="foot" id="foot"></footer>
 </div>
 
 <script>
@@ -485,9 +492,12 @@ const storage = () => { try { return window.localStorage; } catch { return undef
 
 function renderFoot() {
   document.getElementById("foot").innerHTML = `
-    <p>Tubable means the dam's total release (น้ำออกเขื่อน) is at least ${T.tube} million m³ a day. The irrigation canals take the first ~${T.canal}; the rest flows down the Mae Ngat.</p>
-    <p>The forecast is a model trained on every day since 2006. It starts from how full the dam is and how much it is releasing now (${fmt(D.now.pct, 0)}% full, ${fmt(D.now.outflow)} M m³/day on ${short(latest)}). Current release drives the next few weeks; fullness drives the months after. Window odds show the stretch average. Rainfall and El Niño were tested and didn't improve it, so they're shown for context only.</p>
-    <p>Data: Royal Irrigation Department daily reservoir reports, Open-Meteo catchment rainfall, NOAA Oceanic Niño Index. Built ${D.generated}.</p>`;
+    <details class="card how"><summary class="btn">How this works</summary>
+      <p>Tubable means the dam's total release (น้ำออกเขื่อน) is at least ${T.tube} million m³ a day. The irrigation canals take the first ~${T.canal}; the rest flows down the Mae Ngat.</p>
+      <p>The forecast is a model trained on every day since 2006. It starts from how full the dam is and how much it is releasing now (${fmt(D.now.pct, 0)}% full, ${fmt(D.now.outflow)} M m³/day on ${short(latest)}). Current release drives the next few weeks; fullness drives the months after. Window odds show the stretch average. Rainfall and El Niño were tested and didn't improve it, so they're shown for context only.</p>
+      <p>Data: Royal Irrigation Department daily reservoir reports, Open-Meteo catchment rainfall, NOAA Oceanic Niño Index.</p>
+    </details>
+    <div class="sign">${ratImg("sleep")}<span>Built ${longDate(D.generated)}.</span></div>`;
 }
 
 const isPhone = () => window.matchMedia("(max-width: 979px)").matches;
