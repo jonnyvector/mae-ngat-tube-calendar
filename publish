@@ -21,6 +21,7 @@ git push -q origin main
 SITE=.cache/gh-pages
 [ -d "$SITE" ] || git worktree add -q "$SITE" gh-pages
 cp app/index.html "$SITE/index.html"
+rm -rf "$SITE/img" && cp -R app/img "$SITE/img"
 touch "$SITE/.nojekyll"
 git -C "$SITE" add -A
 git -C "$SITE" diff --cached --quiet || git -C "$SITE" commit -q -m "Publish $(date +%F)"
