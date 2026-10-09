@@ -176,6 +176,7 @@ tr.hl td { background: var(--weekend); }
 .how summary::-webkit-details-marker { display: none; }
 .sign { display: grid; justify-items: center; gap: 4px; color: var(--ink-muted); font-size: 0.85rem; }
 .sign .rat { width: 120px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 </style>
 
 <div class="wrap">
@@ -216,6 +217,7 @@ tr.hl td { background: var(--weekend); }
       <div class="months" id="months" aria-label="Calendar"></div>
       <div class="backdrop" id="backdrop" hidden></div>
       <aside class="sheet" id="sheet" tabindex="-1" aria-labelledby="sheet-title"></aside>
+      <p class="sr-only" id="announce" aria-live="polite"></p>
     </div>
   </section>
 
@@ -505,7 +507,11 @@ let lastFocus = null;
 
 function openDay(s, from) {
   select(s);
-  if (!isPhone()) return;
+  if (!isPhone()) {
+    if (from?.classList?.contains("day")) document.querySelector(`.day[data-d="${s}"]`)?.focus();
+    document.getElementById("announce").textContent = `${longDate(s)}: ${dayVerdict(s, classify(s)).title}`;
+    return;
+  }
   const sheet = document.getElementById("sheet");
   lastFocus = from || document.activeElement;
   sheet.setAttribute("role", "dialog"); sheet.setAttribute("aria-modal", "true");
@@ -546,7 +552,7 @@ function render() {
   months.addEventListener("click", ev => {
     const step = ev.target.closest(".mstep"), dot = ev.target.closest(".dot"), day = ev.target.closest(".day[data-d]");
     if (step) { mi = stepMonth(mi, +step.dataset.step); renderMonths(); months.querySelector(`.month.on .mstep[data-step="${step.dataset.step}"]`)?.focus(); }
-    else if (dot) { mi = +dot.dataset.k; renderMonths(); }
+    else if (dot) { mi = +dot.dataset.k; renderMonths(); months.querySelector(`.dot[data-k="${mi}"]`)?.focus(); }
     else if (day) openDay(day.dataset.d, day);
   });
   let t0 = null;
@@ -573,7 +579,7 @@ function render() {
     else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
   });
   let s0 = null;
-  sheet.addEventListener("touchstart", ev => { s0 = sheet.scrollTop <= 0 ? ev.touches[0].clientY : null; }, { passive: true });
+  sheet.addEventListener("touchstart", ev => { s0 = sheet.scrollTop <= 0 && !ev.target.closest(".tablewrap") ? ev.touches[0].clientY : null; }, { passive: true });
   sheet.addEventListener("touchend", ev => { if (s0 != null && ev.changedTouches[0].clientY - s0 > 80) closeSheet(); s0 = null; }, { passive: true });
   window.matchMedia("(max-width: 979px)").addEventListener("change", () => closeSheet());
   mi = Math.max(0, monthIndexOf(latest));
