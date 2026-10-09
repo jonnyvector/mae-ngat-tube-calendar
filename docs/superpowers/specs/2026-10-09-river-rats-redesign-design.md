@@ -31,16 +31,18 @@ Make the tube calendar fun and easier to read. Same answers as today (is it tuba
 | `--card` | `#FFFAF0` | cards, sheet |
 | `--ink` | `#2A1A10` | text, outlines, shadows |
 | `--ink-muted` | `#6B5444` | secondary text (must pass AA on `--paper`) |
-| `--river` | `#0B8A80` | Tubable; cream text on top |
-| `--lagoon` | `#5CC8B8` | Good odds; ink text |
-| `--sun` | `#FFC23D` | Possible; ink text |
-| `--sand` | `#EBDDC2` | Too low / unlikely; muted ink text |
-| `--tube` | `#FF5E2B` | today, selection, weekends, primary buttons |
+| `--river` | `#0B8A80` | Tubable (the only solid day fill); cream text on top |
+| `--river-tint` | `#BFE6E0` | Good-odds forecast day |
+| `--river-faint` | `#E4F3EF` | Possible forecast day |
+| `--lagoon` | `#5CC8B8` | accent (season strip, stickers); never a day state |
+| `--sun` | `#FFC23D` | sunburst; weekend column band at 28% |
+| `--sand` | `#EBDDC2` | outline for too-low / unlikely days |
+| `--tube` | `#FF5E2B` | buttons and calls to action only; never marks a day |
 | `--hibiscus` | `#E8457A` | sparing accent: odds badges, stickers |
 
 `--ink-muted` is a starting value; adjust during implementation until it measures ≥ 4.5:1 on `--paper` and `--card`.
 
-**Observed vs forecast:** observed days are solid fills. Forecast days use the same band colour plus a halftone-dot overlay (CSS radial-gradient pattern), replacing today's dashed borders and stripes.
+**Calendar reads yes-or-no first:** only tubable days get a solid fill (`--river`) and the tube badge. Solid edge = happened, dashed edge = forecast; more teal = more likely. Forecast cells print their odds. This replaces today's dashed borders and stripes. (Revised 2026-10-09 after review: the first version's lagoon/sun/sand + halftone states were hard to tell apart.)
 
 **Type (Google Fonts):**
 - Shrikhand: the big verdict and section titles only.
@@ -66,11 +68,11 @@ Make the tube calendar fun and easier to read. Same answers as today (is it tuba
 - the date range, big, in Mitr
 - `p_avg` in a hibiscus starburst badge
 - "{days} days · {weekend days} weekend days · peak {p_max}%"
-- a colour edge: `--lagoon` for good, `--sun` for possible
+- a teal edge: solid `--river` for good, dashed for possible
 
 Tapping a stub switches to the next-12-months view, shows that month, and opens the day. With no windows: the sleeping rat and "Nothing on the horizon for 12 months."
 
-**"Tubing season" strip:** 12 rounded bars from `D.month_odds` (% of days tubable since 2006). Months with odds ≥ 40% are `--river`; the rest are `--lagoon`. The current month's label is in `--tube`. Caption: "Peak: Feb–Apr, when the dam waters the dry-season rice."
+**"Tubing season" strip:** 12 rounded bars from `D.month_odds` (% of days tubable since 2006). Months with odds ≥ 40% are `--river`; the rest are `--lagoon`. The current month's label is bold ink. Caption: "Peak: Feb–Apr, when the dam waters the dry-season rice."
 
 **Desktop (≥ 980px):** the hero takes about 60% of the width on the left; the ticket stubs stack vertically on the right with the season strip below.
 
@@ -82,7 +84,7 @@ Tapping a stub switches to the next-12-months view, shows that month, and opens 
 - The month card title shows "February 2027" with a summary ("11 tubable · 6 good · 3 maybe").
 - ◀ ▶ buttons sit beside the title. Horizontal swipe on the card moves one month; vertical scroll must keep working.
 - A row of 12 month dots underneath, each tinted by that month's dominant state; tap a dot to jump.
-- Day cells are about 48px with day numbers in Mitr.
+- Day cells are about 52px with day numbers in Mitr.
 
 **Desktop (≥ 980px):** all 12 months shown as a grid of cards (3–4 per row), as today.
 
@@ -90,19 +92,19 @@ Tapping a stub switches to the next-12-months view, shows that month, and opens 
 
 | State | Look |
 |---|---|
-| Tubable (observed) | solid `--river`, cream number, mini tube icon in a corner |
-| Too low (observed) | solid `--sand`, muted number |
-| Good odds (forecast) | `--lagoon` + halftone |
-| Possible (forecast) | `--sun` + halftone |
-| Unlikely (forecast) | `--sand` + halftone |
-| No data | outline only, faded, disabled |
-| Weekend | `--tube` underline bar; S column headers in `--tube` |
-| Today | `--tube` ring + tiny "today" flag |
-| Selected | thick `--ink` ring |
+| Tubable (observed) | solid `--river`, cream bold number, ink border, tube badge on the top-right corner. Nothing else gets the badge |
+| Too low (observed) | no fill, faded number, thin solid `--sand` outline |
+| Good odds (forecast, p ≥ `T.good`) | `--river-tint` fill, dashed `--river` edge, odds printed under the number ("74%") |
+| Possible (forecast, p ≥ `T.possible`) | `--river-faint` fill, soft dashed teal edge, odds printed in muted ink |
+| Unlikely (forecast) | no fill, faded number, dashed `--sand` edge, odds printed faint |
+| No data | faint number only, disabled |
+| Weekend | pale `--sun` band (28%) behind the Saturday and Sunday columns; S headers in full ink |
+| Today | small ink "TODAY" tab on top of the cell |
+| Selected | 3px `--ink` outline with 2px offset |
 
 Every cell keeps its current `aria-label` text ("2027-02-14: Good odds, 72% chance tubable").
 
-**Legend:** a collapsible "What the colours mean" row of sticker swatches, including a halftone sample labelled "forecast".
+**Legend:** a collapsible "What the colours mean" row of sample cells, with the one-line rule "Solid = happened, dashed = forecast. More teal = more likely."
 
 ## 4. Day detail
 
@@ -123,9 +125,10 @@ Every cell keeps its current `aria-label` text ("2027-02-14: Good odds, 72% chan
    - Forecast: likely release, high end (1 in 4).
 5. Trust note, forecast days only. It uses the existing `reliability()` wording, rewritten plainly: "{lead} days out. Days we called '{label}' this far ahead were tubable {r}% of the time." Beyond 45 days, append the "check back closer to the day" sentence.
 6. "🤓 Nerd stats" (`<details>`, closed by default) containing:
-   - "This date in past years" bar chart (tube line dashed, selected year outlined in `--tube`)
+   - "This date in past years" bar chart (tube line dashed, selected year outlined in ink)
    - "Tubable in {n} of {total} years"
    - the year table: year, release pill, dam fill, rain, ENSO
+   - the selected year is outlined in ink
 
    The open/closed state is stored in `localStorage` (inside try/catch; the page works without it).
 
