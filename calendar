@@ -1,0 +1,3 @@
+#!/bin/sh
+# Rebuild the release calendar page (app/index.html) from the latest data and open it
+cd "$(dirname "$0")" && .venv/bin/python scripts/build_app.py && open app/index.html

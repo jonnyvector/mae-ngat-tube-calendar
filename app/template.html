@@ -1,0 +1,400 @@
+<title>Mae Ngat Tube Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: answer-first. Today's verdict + flow gauge, upcoming windows, tubing-season strip, then the
+   month grid (left) with a sticky day sheet (right); everything stacks to one column on phones. */
+:root {
+  --bg: #edf2f0;          /* river mist */
+  --surface: #fbfcfb;
+  --ink: #10261f;
+  --muted: #587068;
+  --line: #d2ddd9;
+  --tube: #e8742a;        /* inner-tube orange: today, selection, weekends */
+  --yes: #0e7c6b;         /* tubable (what happened) */
+  --good: #3fa48f;        /* forecast: good odds */
+  --maybe: #c9e6dd;       /* forecast: possible */
+  --no: #e1e7e5;          /* low water */
+  --on-yes: #f3fbf8;      /* text on --yes / --good */
+  --font-display: "Bai Jamjuree", "Sarabun", system-ui, sans-serif;
+  --font-body: "Sarabun", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1915; --surface: #12241f; --ink: #e2efea; --muted: #8fa9a0; --line: #21403a;
+    --tube: #f08a45; --yes: #4fc2a8; --good: #2f8f7b; --maybe: #1f4a41; --no: #1a2e29; --on-yes: #06201a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1915; --surface: #12241f; --ink: #e2efea; --muted: #8fa9a0; --line: #21403a;
+  --tube: #f08a45; --yes: #4fc2a8; --good: #2f8f7b; --maybe: #1f4a41; --no: #1a2e29; --on-yes: #06201a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); padding-inline: 16px; padding-block: 22px 44px; }
+.wrap { max-width: 1240px; margin-inline: auto; display: grid; gap: 22px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; line-height: 1.12; }
+h3 { font-size: 0.76rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+button { font: inherit; color: inherit; }
+button:focus-visible, select:focus-visible { outline: 2px solid var(--tube); outline-offset: 2px; }
+
+/* hero: the answer */
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .hero { grid-template-columns: minmax(0, 1fr); } }
+.answer { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; display: grid; gap: 14px; align-content: start; }
+.answer .eyebrow { font-size: 0.8rem; color: var(--muted); }
+.answer h1 { font-size: clamp(1.9rem, 4.2vw, 2.9rem); font-weight: 700; letter-spacing: -0.015em; }
+.answer h1 em { font-style: normal; color: var(--yes); }
+.answer h1 em.no { color: var(--muted); }
+.answer p { margin: 0; max-width: 62ch; }
+.gauge svg { width: 100%; max-width: 480px; height: auto; display: block; }
+.gauge text { font: 11px var(--font-data); fill: var(--muted); }
+.side { display: grid; gap: 14px; align-content: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; display: grid; gap: 10px; min-width: 0; }
+.wins { display: grid; gap: 6px; }
+.win { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; text-align: left; background: transparent; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+.win:hover { border-color: var(--tube); }
+.win b { font-family: var(--font-display); font-weight: 600; }
+.win small { color: var(--muted); grid-column: 1; }
+.win .odds { grid-row: 1 / span 2; grid-column: 2; font: 500 1.05rem var(--font-data); color: var(--yes); }
+.season svg { width: 100%; height: auto; display: block; }
+.season text { font: 10px var(--font-data); fill: var(--muted); }
+
+/* controls + legend */
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; }
+.views { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.views button, .views select { font: 600 0.88rem var(--font-body); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; color: var(--ink); }
+.views select { font-family: var(--font-data); font-weight: 500; }
+.views button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.82rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 15px; height: 15px; border-radius: 4px; display: inline-block; }
+
+/* calendar */
+.work { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; align-items: start; }
+@media (max-width: 980px) { .work { grid-template-columns: minmax(0, 1fr); } }
+.months { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 20px 16px; }
+.month h2 { font-size: 1rem; font-weight: 600; display: flex; flex-wrap: wrap; gap: 0 10px; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.month h2 small { font: 400 0.74rem var(--font-data); color: var(--muted); }
+.grid7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.dow { font-size: 0.68rem; color: var(--muted); text-align: center; }
+.dow.we { color: var(--tube); font-weight: 600; }
+.day { aspect-ratio: 1; max-width: 100%; border-radius: 6px; border: 1px solid transparent; background: var(--no); color: var(--muted);
+  font: 500 0.72rem var(--font-data); display: grid; place-items: center; cursor: pointer; position: relative; padding: 0; }
+.day.yes { background: var(--yes); color: var(--on-yes); }
+.day.good { background: var(--good); color: var(--on-yes); border: 1px dashed color-mix(in srgb, var(--ink) 35%, transparent); }
+.day.maybe { background: repeating-linear-gradient(135deg, var(--maybe) 0 4px, color-mix(in srgb, var(--maybe) 55%, var(--surface)) 4px 7px); color: var(--ink); border: 1px dashed color-mix(in srgb, var(--ink) 30%, transparent); }
+.day.unlikely { border: 1px dashed color-mix(in srgb, var(--ink) 18%, transparent); }
+.day.none { background: transparent; border: 1px solid var(--line); cursor: default; opacity: .6; }
+.day.we:not(.none)::after { content: ""; position: absolute; left: 25%; right: 25%; bottom: 3px; height: 2px; border-radius: 2px; background: var(--tube); opacity: .75; }
+.day.today { box-shadow: 0 0 0 2px var(--tube); }
+.day.sel { box-shadow: 0 0 0 2px var(--ink); }
+
+/* day sheet */
+.sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: grid; gap: 16px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); min-width: 0; }
+@media (max-width: 980px) { .sheet { position: static; } }
+.sheet h2 { font-size: 1.25rem; font-weight: 600; }
+.sheet .thai { color: var(--muted); font-size: 0.9rem; }
+.verdict { display: grid; gap: 4px; }
+.verdict .tag { font: 700 1.6rem/1.1 var(--font-display); }
+.verdict .tag.yes, .verdict .tag.good { color: var(--yes); }
+.verdict .tag.maybe { color: var(--good); }
+.verdict .tag.no, .verdict .tag.unlikely { color: var(--muted); }
+.verdict p { margin: 0; font-size: 0.92rem; }
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; margin: 0; }
+.facts div { display: grid; gap: 1px; min-width: 0; }
+.facts dt { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.facts dd { margin: 0; font: 500 1rem var(--font-data); font-variant-numeric: tabular-nums; }
+.note { font-size: 0.84rem; color: var(--muted); margin: 0; }
+.bars svg { width: 100%; height: auto; display: block; }
+.bars text { fill: var(--muted); font: 10px var(--font-data); }
+.tablewrap { overflow-x: auto; max-height: 300px; overflow-y: auto; border-top: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; font-size: 0.82rem; }
+th, td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-weight: 600; color: var(--muted); position: sticky; top: 0; background: var(--surface); }
+td { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+tr.hl td { background: color-mix(in srgb, var(--tube) 14%, transparent); }
+.pill { display: inline-block; padding: 0 7px; border-radius: 999px; font: 600 0.72rem var(--font-data); }
+.pill.yes { background: var(--yes); color: var(--on-yes); }
+.pill.no { background: var(--no); color: var(--muted); }
+.enso { font: 600 0.72rem var(--font-body); }
+.enso.el_nino { color: var(--tube); } .enso.la_nina { color: var(--yes); } .enso.neutral { color: var(--muted); }
+footer { font-size: 0.8rem; color: var(--muted); display: grid; gap: 6px; max-width: 78ch; }
+footer p { margin: 0; }
+@media (prefers-reduced-motion: no-preference) { .day:not(.none) { transition: transform .12s; } .day:not(.none):hover { transform: scale(1.08); } }
+</style>
+
+<div class="wrap">
+  <section class="hero">
+    <div class="answer" id="answer"></div>
+    <div class="side">
+      <div class="panel"><h3>Next tubing chances</h3><div class="wins" id="wins"></div></div>
+      <div class="panel season"><h3>Tubing season</h3><div id="season"></div></div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <div class="views" role="group" aria-label="Calendar range">
+      <button type="button" id="v-next" aria-pressed="true">Next 12 months</button>
+      <select id="y-sel" aria-label="Show a year"></select>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--yes)"></i>Tubable</span>
+      <span><i class="sw" style="background:var(--good);outline:1px dashed var(--muted)"></i>Good odds</span>
+      <span><i class="sw" style="background:repeating-linear-gradient(135deg,var(--maybe) 0 4px,var(--surface) 4px 7px);outline:1px dashed var(--muted)"></i>Possible</span>
+      <span><i class="sw" style="background:var(--no)"></i>Too low</span>
+      <span><i class="sw" style="background:var(--tube);height:3px;width:12px"></i>Weekend</span>
+    </div>
+  </div>
+
+  <div class="work">
+    <section class="months" id="months" aria-label="Calendar"></section>
+    <aside class="sheet" id="sheet" aria-live="polite"></aside>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const D = /*__DATA__*/null;
+const T = D.thresholds;
+const DAY = 86400000;
+const hist = D.history;
+const latest = D.latest;
+const fcByDate = Object.fromEntries(D.forecast.map(f => [f.date, f]));
+const THAI_M = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+const parse = s => { const [y, m, d] = s.split("-").map(Number); return { y, m: m - 1, d }; };
+const utc = s => { const p = parse(s); return Date.UTC(p.y, p.m, p.d); };
+const iso = (y, m, d) => `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+const h0 = utc(hist.start);
+const idx = s => Math.round((utc(s) - h0) / DAY);
+const isWeekend = s => [0, 6].includes(new Date(utc(s)).getUTCDay());
+const fmt = (v, n = 2) => v == null ? "–" : v.toFixed(n);
+const toRiver = mcm => Math.max(mcm - T.canal, 0) * 1e6 / 86400;     // m3/s left over after the canals
+const short = s => { const p = parse(s); return `${p.d} ${MONTHS[p.m].slice(0, 3)}`; };
+const longDate = s => new Date(utc(s)).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
+function observed(s) {
+  if (s > latest) return null;
+  const i = idx(s);
+  if (i < 0 || i >= hist.out.length || hist.out[i] == null) return null;
+  return { out: hist.out[i], pct: hist.pct[i], inflow: hist.inflow[i], rain: hist.rain[i], derived: !!hist.derived[i] };
+}
+function ensoFor(s) { const p = parse(s); return hist.enso[`${p.y}-${String(p.m + 1).padStart(2, "0")}`]; }
+
+// one classification for every day: what happened (yes/no), or a forecast band
+function classify(s) {
+  const o = observed(s);
+  if (o) return { kind: o.out >= T.tube ? "yes" : "no", o };
+  const f = fcByDate[s];
+  if (!f) return null;
+  return { kind: f.p >= T.good ? "good" : f.p >= T.possible ? "maybe" : "unlikely", f };
+}
+const LABEL = { yes: "Tubable", no: "Too low", good: "Good odds", maybe: "Possible", unlikely: "Unlikely" };
+
+function gaugeSVG(value, high) {
+  const W = 420, H = 58, x0 = 12, x1 = W - 12, max = 2.5;
+  const x = v => x0 + Math.min(v, max) / max * (x1 - x0);
+  let g = `<rect x="${x0}" y="18" width="${x1 - x0}" height="12" rx="6" fill="var(--no)"/>
+    <rect x="${x(T.tube)}" y="18" width="${x1 - x(T.tube)}" height="12" rx="6" fill="var(--maybe)"/>
+    <line x1="${x(T.tube)}" x2="${x(T.tube)}" y1="12" y2="36" stroke="var(--yes)" stroke-width="2"/>
+    <text x="${x(T.tube) + 5}" y="11" style="fill:var(--yes)">tube line ${T.tube}</text>`;
+  if (high != null && high > value) g += `<rect x="${x(value)}" y="21" width="${x(high) - x(value)}" height="6" rx="3" fill="var(--tube)" opacity=".4"/>`;
+  g += `<circle cx="${x(value)}" cy="24" r="7" fill="var(--tube)" stroke="var(--surface)" stroke-width="2"/>`;
+  [0, 0.5, 1, 1.5, 2, 2.5].forEach(t => g += `<text x="${x(t)}" y="50" text-anchor="middle">${t}</text>`);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Release ${fmt(value)} million cubic metres per day; tubable from ${T.tube}">${g}</svg>`;
+}
+
+function renderAnswer() {
+  const n = D.now, w = D.windows[0];
+  const g = D.windows.find(x => x.band === "good");
+  const next = w ? `Next chance: <b>${short(w.start)}–${short(w.end)}</b> (${w.band === "good" ? "good odds" : "possible"}, up to ${Math.round(w.p_max * 100)}%)${g && g !== w ? `; best odds from <b>${short(g.start)}</b>` : ""}.` : "No tubing chances in the next 12 months.";
+  document.getElementById("answer").innerHTML = `
+    <span class="eyebrow">เขื่อนแม่งัดสมบูรณ์ชล · latest reading ${longDate(latest)}</span>
+    <h1>${n.tubable ? `<em>Tubable.</em> The Mae Ngat is running.` : `<em class="no">Not tubable</em> right now.`}</h1>
+    <p>The dam is releasing <b class="num">${fmt(n.outflow)}</b> million m³ a day${n.tubable ? `, about <b class="num">${fmt(toRiver(n.outflow), 1)}</b> m³/s into the river` : `, most of it into the irrigation canals`}. The river is tubable from <b class="num">${T.tube}</b>. ${next}</p>
+    <div class="gauge">${gaugeSVG(n.outflow)}</div>
+    <p class="muted" style="font-size:.85rem">Dam ${fmt(n.pct, 0)}% full${D.enso_now ? ` · Pacific: ${D.enso_now.phase.replace("_", " ")} (${D.enso_now.oni > 0 ? "+" : ""}${D.enso_now.oni.toFixed(1)})` : ""}</p>`;
+}
+
+function weekendDays(a, b) {
+  let n = 0;
+  for (let t = utc(a); t <= utc(b); t += DAY) if ([0, 6].includes(new Date(t).getUTCDay())) n++;
+  return n;
+}
+
+function renderWindows() {
+  const host = document.getElementById("wins");
+  const list = D.windows.slice(0, 5);
+  if (!list.length) { host.innerHTML = `<p class="note">No stretch reaches even possible odds in the next 12 months.</p>`; return; }
+  host.innerHTML = list.map(w => {
+    const we = weekendDays(w.start, w.end);
+    return `<button type="button" class="win" data-d="${w.start}"><b>${short(w.start)}${w.end !== w.start ? " – " + short(w.end) : ""}</b>
+      <span class="odds" ${w.band !== "good" ? 'style="color:var(--good)"' : ""}>${Math.round(w.p_avg * 100)}%</span>
+      <small>${w.band === "good" ? "Good odds" : "Possible"} · ${w.days} days · ${we} weekend days · peak ${Math.round(w.p_max * 100)}%</small></button>`;
+  }).join("");
+}
+
+function renderSeason() {
+  const W = 360, H = 100, pad = 26, bw = (W - pad) / 12;
+  const y = v => H - 18 - v * (H - 34);
+  const cur = parse(latest).m;
+  let g = `<line x1="${pad}" x2="${W}" y1="${y(0.5)}" y2="${y(0.5)}" stroke="var(--line)" stroke-dasharray="3 3"/><text x="${pad - 4}" y="${y(0.5) + 3}" text-anchor="end">50%</text>`;
+  D.month_odds.forEach((v, m) => {
+    if (v == null) return;
+    const x = pad + m * bw + 2, w = bw - 4, peak = v >= 0.4;
+    g += `<rect x="${x}" y="${y(v)}" width="${w}" height="${y(0) - y(v)}" rx="3" fill="${peak ? "var(--yes)" : "var(--good)"}" opacity="${peak ? 1 : 0.5}"><title>${MONTHS[m]}: tubable on ${Math.round(v * 100)}% of days</title></rect>
+      <text x="${x + w / 2}" y="${y(v) - 4}" text-anchor="middle">${Math.round(v * 100)}</text>
+      <text x="${x + w / 2}" y="${H - 4}" text-anchor="middle" ${m === cur ? 'style="fill:var(--tube);font-weight:600"' : ""}>${MONTHS[m][0]}</text>`;
+  });
+  document.getElementById("season").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Share of tubable days by month since 2006">${g}</svg>
+    <p class="note">% of days tubable each month, 2006–${parse(latest).y}. Peak season is February to April, when the dam releases for dry-season rice.</p>`;
+}
+
+let view = "next", year = parse(latest).y, selected = D.windows.length ? D.windows[0].start : D.forecast[0].date;
+
+function monthsToShow() {
+  if (view === "next") { const p = parse(D.forecast[0].date); return Array.from({ length: 12 }, (_, k) => ({ y: p.y + Math.floor((p.m + k) / 12), m: (p.m + k) % 12 })); }
+  return Array.from({ length: 12 }, (_, m) => ({ y: year, m }));
+}
+
+function renderMonths() {
+  let html = "";
+  for (const { y, m } of monthsToShow()) {
+    const first = new Date(Date.UTC(y, m, 1)).getUTCDay();
+    const n = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    let yes = 0, obs = 0, good = 0, maybe = 0;
+    let cells = ["S","M","T","W","T","F","S"].map((x, i) => `<div class="dow ${i === 0 || i === 6 ? "we" : ""}" aria-hidden="true">${x}</div>`).join("");
+    for (let i = 0; i < first; i++) cells += "<div></div>";
+    for (let d = 1; d <= n; d++) {
+      const s = iso(y, m, d), c = classify(s);
+      if (!c) { cells += `<button type="button" class="day none" disabled aria-label="${s}: no data">${d}</button>`; continue; }
+      if (c.o) { obs++; if (c.kind === "yes") yes++; } else if (c.kind === "good") good++; else if (c.kind === "maybe") maybe++;
+      const label = c.o ? `${s}: ${LABEL[c.kind]}, release ${fmt(c.o.out)}` : `${s}: ${LABEL[c.kind]}, ${Math.round(c.f.p * 100)}% chance tubable`;
+      cells += `<button type="button" class="day ${c.kind} ${isWeekend(s) ? "we" : ""} ${s === latest ? "today" : ""} ${s === selected ? "sel" : ""}" data-d="${s}" aria-label="${label}">${d}</button>`;
+    }
+    const tag = [obs ? `${yes} tubable` : "", good ? `${good} good` : "", maybe ? `${maybe} possible` : ""].filter(Boolean).join(" · ") || (obs ? "" : "unlikely");
+    html += `<div class="month"><h2>${MONTHS[m]} ${y}<small>${tag}</small></h2><div class="grid7">${cells}</div></div>`;
+  }
+  document.getElementById("months").innerHTML = html;
+}
+
+function sameDayHistory(s) {
+  const p = parse(s), rows = [];
+  for (let y = parse(hist.start).y; y <= parse(latest).y; y++) {
+    const d = p.m === 1 && p.d === 29 ? iso(y, 1, 28) : iso(y, p.m, p.d);
+    const o = observed(d);
+    if (o && !o.derived) rows.push({ y, ...o, enso: ensoFor(d) });
+  }
+  return rows;
+}
+
+function barsSVG(rows, s) {
+  const W = 340, H = 124, padL = 30, padB = 18, padT = 8;
+  const max = Math.max(2, ...rows.map(r => r.out));
+  const bw = (W - padL) / Math.max(rows.length, 1);
+  const yv = v => H - padB - (v / max) * (H - padB - padT);
+  const sel = parse(s).y;
+  let g = "";
+  for (const t of [0, T.tube, Math.floor(max)]) {
+    const tube = t === T.tube;
+    g += `<line x1="${padL}" x2="${W}" y1="${yv(t)}" y2="${yv(t)}" stroke="${tube ? "var(--yes)" : "var(--line)"}" ${tube ? 'stroke-dasharray="4 3"' : ""}/>`;
+    g += `<text x="${padL - 4}" y="${yv(t) + 3}" text-anchor="end" ${tube ? 'style="fill:var(--yes)"' : ""}>${t}</text>`;
+  }
+  rows.forEach((r, i) => {
+    const x = padL + i * bw + 1;
+    g += `<rect x="${x}" y="${yv(r.out)}" width="${Math.max(bw - 2, 1)}" height="${yv(0) - yv(r.out)}" rx="1.5" fill="${r.out >= T.tube ? "var(--yes)" : "var(--no)"}" ${r.y === sel ? 'stroke="var(--tube)" stroke-width="2"' : 'stroke="var(--line)"'}><title>${r.y}: ${fmt(r.out)} million m³${r.out >= T.tube ? " (tubable)" : ""}</title></rect>`;
+    if (i % 3 === 0 || i === rows.length - 1) g += `<text x="${x + bw / 2}" y="${H - 4}" text-anchor="middle">${String(r.y).slice(2)}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Release on this date in each past year, with the tube line">${g}</svg>`;
+}
+
+function reliability(s, c) {
+  if (!D.backtest) return "";
+  const lead = Math.round((utc(s) - utc(latest)) / DAY);
+  const L = D.backtest.leads.reduce((a, b) => Math.abs(b.lead_days - lead) < Math.abs(a.lead_days - lead) ? b : a);
+  const r = L.band_rate[c.kind === "good" ? "good" : c.kind === "maybe" ? "possible" : "unlikely"];
+  const far = lead > 45 ? " This far ahead it mostly reflects the usual pattern for the date, so check back closer to the day." : "";
+  return `${lead} day${lead === 1 ? "" : "s"} ahead. In tests on ${D.backtest.years ? D.backtest.years.join("–") : "past years"}, “${LABEL[c.kind].toLowerCase()}” days at this range turned out tubable ${r == null ? "–" : Math.round(r * 100) + "%"} of the time.${far}`;
+}
+
+function renderSheet() {
+  const s = selected, p = parse(s), c = classify(s);
+  const rows = sameDayHistory(s);
+  const yesYears = rows.filter(r => r.out >= T.tube).length;
+  let top = `<p class="note">No data or forecast for this date.</p>`;
+  if (c && c.o) {
+    const o = c.o;
+    top = `<div class="verdict"><span class="tag ${c.kind}">${c.kind === "yes" ? "Tubable" : "Too low to tube"}</span>
+        <p>What happened${o.derived ? " (release estimated from the change in storage)" : ""}.</p></div>
+      <div class="gauge">${gaugeSVG(o.out)}</div>
+      <dl class="facts">
+        <div><dt>Dam release</dt><dd>${fmt(o.out)} <span class="muted">M m³</span></dd></div>
+        <div><dt>Into the river</dt><dd>${o.out > T.canal ? fmt(toRiver(o.out), 1) + ' <span class="muted">m³/s</span>' : "none"}</dd></div>
+        <div><dt>Dam fill</dt><dd>${fmt(o.pct, 0)}%</dd></div>
+        <div><dt>Catchment rain</dt><dd>${o.rain == null ? "–" : fmt(o.rain, 1) + " mm"}</dd></div>
+      </dl>`;
+  } else if (c) {
+    const f = c.f;
+    top = `<div class="verdict"><span class="tag ${c.kind}">${LABEL[c.kind]} · ${Math.round(f.p * 100)}%</span>
+        <p>chance the river is tubable${isWeekend(s) ? " on this weekend day" : ""}.</p></div>
+      <div class="gauge">${gaugeSVG(f.median, f.q75)}</div>
+      <dl class="facts">
+        <div><dt>Likely release</dt><dd>${fmt(f.median)} <span class="muted">M m³</span></dd></div>
+        <div><dt>High end (1 in 4)</dt><dd>${fmt(f.q75)} <span class="muted">M m³</span></dd></div>
+      </dl>
+      <p class="note">${reliability(s, c)}</p>`;
+  }
+  const table = rows.slice().reverse().map(r => `<tr class="${r.y === p.y ? "hl" : ""}"><td>${r.y}</td><td><span class="pill ${r.out >= T.tube ? "yes" : "no"}">${fmt(r.out)}</span></td><td>${fmt(r.pct, 0)}%</td><td>${r.rain == null ? "–" : fmt(r.rain, 1)}</td><td class="enso ${r.enso ? r.enso[1] : ""}">${r.enso ? r.enso[1].replace("_", " ") : "–"}</td></tr>`).join("");
+  document.getElementById("sheet").innerHTML = `
+    <div><h2>${longDate(s)}</h2><span class="thai">${p.d} ${THAI_M[p.m]} ${p.y + 543}</span></div>
+    ${top}
+    <div class="bars"><h3>This date in past years</h3>
+      <p class="note">Tubable in <b>${yesYears} of ${rows.length}</b> years. Green dashed line: the tube line (${T.tube} M m³/day).</p>
+      ${barsSVG(rows, s)}
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Year</th><th>Release</th><th>Dam fill</th><th>Rain mm</th><th>Pacific</th></tr></thead>
+      <tbody>${table}</tbody></table></div>`;
+}
+
+function renderFoot() {
+  document.getElementById("foot").innerHTML = `
+    <p>Tubable means the dam's total release (น้ำออกเขื่อน) is at least ${T.tube} million m³ a day. The irrigation canals take the first ~${T.canal}; the rest flows down the Mae Ngat.</p>
+    <p>The forecast is a model trained on every day since 2006. It starts from how full the dam is and how much it is releasing now (${fmt(D.now.pct, 0)}% full, ${fmt(D.now.outflow)} M m³/day on ${short(latest)}). Current release drives the next few weeks; fullness drives the months after. Window odds show the stretch average. Rainfall and El Niño were tested and didn't improve it, so they're shown for context only.</p>
+    <p>Data: Royal Irrigation Department daily reservoir reports, Open-Meteo catchment rainfall, NOAA Oceanic Niño Index. Built ${D.generated}.</p>`;
+}
+
+function select(s) {
+  selected = s;
+  if (view === "year") year = parse(s).y;
+  render();
+  if (window.matchMedia("(max-width: 980px)").matches) document.getElementById("sheet").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function render() {
+  document.getElementById("v-next").setAttribute("aria-pressed", String(view === "next"));
+  document.getElementById("y-sel").value = view === "year" ? String(year) : "";
+  renderMonths(); renderSheet();
+}
+
+(function init() {
+  const sel = document.getElementById("y-sel");
+  const y0 = parse(hist.start).y, y1 = parse(D.forecast[D.forecast.length - 1].date).y;
+  sel.insertAdjacentHTML("beforeend", `<option value="" disabled>Year…</option>`);
+  for (let y = y1; y >= y0; y--) sel.insertAdjacentHTML("beforeend", `<option value="${y}">${y}</option>`);
+  sel.addEventListener("change", () => { view = "year"; year = +sel.value; render(); });
+  document.getElementById("v-next").addEventListener("click", () => { view = "next"; render(); });
+  document.getElementById("months").addEventListener("click", ev => { const b = ev.target.closest(".day[data-d]"); if (b) select(b.dataset.d); });
+  document.getElementById("wins").addEventListener("click", ev => { const b = ev.target.closest(".win"); if (b) { view = "next"; select(b.dataset.d); } });
+  renderAnswer(); renderWindows(); renderSeason(); renderFoot(); render();
+})();
+</script>

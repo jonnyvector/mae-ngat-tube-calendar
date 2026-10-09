@@ -1,0 +1,8 @@
+.venv/
+.cache/
+__pycache__/
+tessdata/
+data/raw/
+app/index.html
+_site/
+.DS_Store

@@ -1,0 +1,98 @@
+{
+ "run": "2026-10-09",
+ "threshold": 0.8,
+ "years": [
+  2006,
+  2025
+ ],
+ "leads": [
+  {
+   "lead_days": 1,
+   "hit_rate": 0.885,
+   "skill_vs_calendar": 0.542,
+   "band_rate": {
+    "good": 0.856,
+    "possible": 0.43,
+    "unlikely": 0.059
+   },
+   "n": 2247
+  },
+  {
+   "lead_days": 7,
+   "hit_rate": 0.846,
+   "skill_vs_calendar": 0.414,
+   "band_rate": {
+    "good": 0.801,
+    "possible": 0.437,
+    "unlikely": 0.083
+   },
+   "n": 2234
+  },
+  {
+   "lead_days": 14,
+   "hit_rate": 0.819,
+   "skill_vs_calendar": 0.345,
+   "band_rate": {
+    "good": 0.752,
+    "possible": 0.474,
+    "unlikely": 0.089
+   },
+   "n": 2217
+  },
+  {
+   "lead_days": 30,
+   "hit_rate": 0.772,
+   "skill_vs_calendar": 0.225,
+   "band_rate": {
+    "good": 0.705,
+    "possible": 0.459,
+    "unlikely": 0.129
+   },
+   "n": 2205
+  },
+  {
+   "lead_days": 60,
+   "hit_rate": 0.732,
+   "skill_vs_calendar": 0.128,
+   "band_rate": {
+    "good": 0.68,
+    "possible": 0.435,
+    "unlikely": 0.153
+   },
+   "n": 2171
+  },
+  {
+   "lead_days": 120,
+   "hit_rate": 0.719,
+   "skill_vs_calendar": 0.076,
+   "band_rate": {
+    "good": 0.639,
+    "possible": 0.419,
+    "unlikely": 0.153
+   },
+   "n": 2153
+  },
+  {
+   "lead_days": 240,
+   "hit_rate": 0.697,
+   "skill_vs_calendar": -0.026,
+   "band_rate": {
+    "good": 0.49,
+    "possible": 0.423,
+    "unlikely": 0.205
+   },
+   "n": 2112
+  },
+  {
+   "lead_days": 365,
+   "hit_rate": 0.724,
+   "skill_vs_calendar": 0.014,
+   "band_rate": {
+    "good": 0.589,
+    "possible": 0.373,
+    "unlikely": 0.2
+   },
+   "n": 2068
+  }
+ ]
+}
