@@ -21,7 +21,7 @@ Make the tube calendar fun and easier to read. Same answers as today (is it tuba
 
 ## 1. Visual system
 
-**Mood:** 70s river-trip screen print on warm cream paper. Thick ink outlines, hard offset shadows (no blur), subtle paper grain, sunburst rays behind the hero.
+**Mood:** punk, vintage river-trip screen print on warm cream paper, with a 1960s kustom-kulture (Rat Fink–era) monster rat. Thick ink outlines, hard offset shadows (no blur), subtle paper grain, sunburst rays behind the hero.
 
 **Palette (CSS tokens on `:root`):**
 
@@ -45,8 +45,8 @@ Make the tube calendar fun and easier to read. Same answers as today (is it tuba
 **Calendar reads yes-or-no first:** only tubable days get a solid fill (`--river`) and the tube badge. Solid edge = happened, dashed edge = forecast; more teal = more likely. Forecast cells print their odds. This replaces today's dashed borders and stripes. (Revised 2026-10-09 after review: the first version's lagoon/sun/sand + halftone states were hard to tell apart.)
 
 **Type (Google Fonts):**
-- Shrikhand: the big verdict and section titles only.
-- Mitr: headings, buttons, day numbers, wordmark (covers Thai and Latin).
+- Creepster: the big verdict and section titles only (drippy monster lettering). Revised 2026-10-09 from Shrikhand to match the punk rat.
+- Bungee: headings, buttons, day numbers, wordmark (blocky sign-paint caps, one weight: always 400). Revised from Mitr. Bungee has no Thai, so any Thai text uses Sarabun.
 - Sarabun: body text (kept).
 - IBM Plex Mono: tabular numbers inside nerd stats only.
 
@@ -54,18 +54,18 @@ Make the tube calendar fun and easier to read. Same answers as today (is it tuba
 
 ## 2. Top of page
 
-**Header bar:** wordmark "MAE NGAT RIVER RATS" (Mitr), muted Thai dam name `เขื่อนแม่งัดสมบูรณ์ชล`, latest-reading date right-aligned.
+**Header bar:** wordmark "MAE NGAT RIVER RATS" (Bungee), muted Thai dam name `เขื่อนแม่งัดสมบูรณ์ชล`, latest-reading date right-aligned.
 
 **Hero poster card** (full width, sunburst background):
 - Mood rat image, about 260px tall on phone, chosen from today's verdict (`D.now.tubable`).
-- Verdict in Shrikhand, 44–52px: "Send it!" when tubable, "Rat's waiting." when not.
+- Verdict in Creepster, 44–52px: "Send it!" when tubable, "Rat's waiting." when not.
 - One plain sentence: "Dam's letting out **{outflow}** million m³/day. Tubing starts at **{T.tube}**." When tubable, append the m³/s into the river (existing `toRiver`).
 - Chunky river-level gauge: sand below `T.tube`, teal above, a tube icon as the marker, the `T.tube` tick labelled "tube line". Scale 0–2.5 as today.
 - Small footnote row: dam fill %, Pacific ENSO phase and ONI.
 - When not tubable and a window exists: a ticket-style CTA "Next float: {start}–{end} · {p_avg}%". Tapping it opens that day (see section 4).
 
 **"Next floats":** up to 5 entries from `D.windows`, as horizontally scrolling ticket stubs on phone. Each stub shows:
-- the date range, big, in Mitr
+- the date range, big, in Bungee
 - `p_avg` in a hibiscus starburst badge
 - "{days} days · {weekend days} weekend days · peak {p_max}%"
 - a teal edge: solid `--river` for good, dashed for possible
@@ -78,13 +78,13 @@ Tapping a stub switches to the next-12-months view, shows that month, and opens 
 
 ## 3. Calendar ("The Float Calendar")
 
-**Header:** title in Shrikhand. Two sticker toggles: "Next 12 months" and "Pick a year ▾" (select, 2000 through the last forecast year). Same view state as today (`view`, `year`).
+**Header:** title in Creepster. Two sticker toggles: "Next 12 months" and "Pick a year ▾" (select, 2000 through the last forecast year). Same view state as today (`view`, `year`).
 
 **Phone (< 980px):** one month visible at a time.
 - The month card title shows "February 2027" with a summary ("11 tubable · 6 good · 3 maybe").
 - ◀ ▶ buttons sit beside the title. Horizontal swipe on the card moves one month; vertical scroll must keep working.
 - A row of 12 month dots underneath, each tinted by that month's dominant state; tap a dot to jump.
-- Day cells are about 52px with day numbers in Mitr.
+- Day cells are about 52px with day numbers in Bungee.
 
 **Desktop (≥ 980px):** all 12 months shown as a grid of cards (3–4 per row), as today.
 
@@ -113,8 +113,8 @@ Every cell keeps its current `aria-label` text ("2027-02-14: Good odds, 72% chan
 **Desktop:** the same content in a sticky right-hand panel. No backdrop; it always shows the selected day. The default selection is the first window's start, or the first forecast day, as today.
 
 **Contents, top to bottom:**
-1. Long date in Mitr, with the Thai date (`{d} {THAI_M} {y+543}`) muted underneath.
-2. Mood rat (about 160px) and a verdict line in Shrikhand:
+1. Long date in Bungee, with the Thai date (`{d} {THAI_M} {y+543}`) muted underneath.
+2. Mood rat (about 160px) and a verdict line in Creepster:
    - Tubable (observed): "It was flowing!", plus the release and m³/s into the river.
    - Too low (observed): "Dry rocks.", plus the release.
    - Forecast: "{Label} · {p}%" with "chance it's tubable" (and "on a weekend day" when relevant).
@@ -138,18 +138,20 @@ A `<details>` "How this works" holds the current footer text (tube-line definiti
 
 ## Mascot art
 
-**Style:** retro screen-print river rat in an inner tube, limited palette matching section 1, grain texture, transparent background.
+**Style:** an original punk river rat in 1960s kustom-kulture monster style (bulging bloodshot eyes, snaggleteeth, leather vest with safety pins and a RIVER RATZ patch, ripped teal shorts, always a beer), vintage screen-print, limited palette matching section 1, grain texture, transparent background.
 
 | File (`app/img/`) | Used for | Scene |
 |---|---|---|
-| `rat-tubable.webp` | tubable verdict, tubable day | stoked rat floating in a tube with a drink |
-| `rat-good.webp` | good-odds day | rat pumping up the tube |
-| `rat-possible.webp` | possible day | rat squinting at the sky |
-| `rat-dry.webp` | not tubable, too-low or unlikely day | rat on dry rocks with a deflated tube |
-| `rat-sleep.webp` | no windows, no data, footer | rat asleep in a hammock |
+| `rat-tubable.webp` | tubable verdict, tubable day | rowdy rat riding the rapids, beer raised |
+| `rat-good.webp` | good-odds day | sly rat pumping the tube, beer in hand |
+| `rat-possible.webp` | possible day | skeptical squint at the sky, sipping |
+| `rat-dry.webp` | not tubable, too-low or unlikely day | furious rat, steam from ears, kicking the tube across dry rocks |
+| `rat-sleep.webp` | no windows, no data, footer | passed out in a hammock among empty cans |
 | `tube.svg` or `.webp` | calendar badge, gauge marker | small inner-tube icon |
 
-**Process:**
+**Process (as done):** Gemini 3 Pro Image via treg, reference sheet first, moods generated from it; backgrounds cut out in Pencil.
+
+**Original process:**
 1. Generate one character reference sheet first.
 2. Generate each mood from that reference so the rat stays consistent.
 3. Jonny picks the final set.

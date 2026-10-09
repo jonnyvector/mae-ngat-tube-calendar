@@ -7,7 +7,7 @@
 **Architecture:** The page stays one static template. `scripts/build_app.py` replaces `/*__DATA__*/null` with the `D` JSON object. All pure logic (date maths, classification, copy, month stats, preferences) moves into a block marked `// logic:start` / `// logic:end`. A Node test harness evaluates just that block against a small fixture `D`. The DOM code (render functions, pager, sheet) sits below the block and is verified in Chrome. The rat art is generated in Pencil, exported as WebP into `app/img/`, and published next to `index.html`.
 
 **Tech Stack:**
-- page: plain HTML/CSS/JS, Google Fonts (Shrikhand, Mitr, Sarabun, IBM Plex Mono)
+- page: plain HTML/CSS/JS, Google Fonts (Creepster, Bungee, Sarabun, IBM Plex Mono)
 - tests: Node 22 `node:test`
 - design and art: Pencil MCP (`execute`, `Generate`, `Export`)
 - image compression: `cwebp`
@@ -783,7 +783,7 @@ Replace lines 1–45 (from the `<title>` to the focus-visible rule) and delete b
 <title>Mae Ngat River Rats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Mitr:wght@400;500;600&family=Sarabun:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Creepster&family=Bungee&family=Sarabun:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Retro river-trip poster on cream paper. Phone first: answer (hero) → next floats → season → one-month
    calendar with a bottom sheet. ≥980px: hero beside floats, 12-month grid beside a sticky day panel. */
@@ -792,8 +792,8 @@ Replace lines 1–45 (from the `<title>` to the focus-visible rule) and delete b
   --river: #087A72; --river-ink: #06625B; --river-tint: #BFE6E0; --river-faint: #E4F3EF; --lagoon: #5CC8B8;
   --sun: #FFC23D; --sand: #EBDDC2; --tube: #FF5E2B; --hibiscus: #EC5585;
   --weekend: #FFE6AE;
-  --f-display: "Shrikhand", "Mitr", Georgia, serif;
-  --f-head: "Mitr", "Sarabun", system-ui, sans-serif;
+  --f-display: "Creepster", "Bungee", Impact, sans-serif;
+  --f-head: "Bungee", "Sarabun", Impact, sans-serif;
   --f-body: "Sarabun", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --shadow: 4px 4px 0 var(--ink);
