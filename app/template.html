@@ -62,6 +62,25 @@ button, select { font: inherit; color: inherit; }
 .gauge text { font: 11px var(--f-data); fill: var(--ink-muted); }
 @media (min-width: 980px) { .hero { grid-template-columns: auto minmax(0, 1fr); text-align: left; justify-items: start; column-gap: 22px; } .hero .rat { grid-row: span 3; } .hero .gauge, .hero .foot-note, .hero .cta { grid-column: 1 / -1; } }
 
+/* next floats + season */
+.side { display: grid; gap: 22px; align-content: start; min-width: 0; }
+.floats { display: grid; gap: 12px; min-width: 0; }
+.tickets { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 80%); gap: 14px; overflow-x: auto; padding: 16px 6px 10px 2px; scroll-snap-type: x mandatory; }
+@media (min-width: 980px) { .tickets { grid-auto-flow: row; grid-auto-columns: auto; overflow: visible; } }
+.ticket { scroll-snap-align: start; position: relative; text-align: left; display: grid; gap: 4px; padding: 14px 68px 14px 22px; min-height: 44px; cursor: pointer;
+  background: var(--card); border: 3px solid var(--ink); border-radius: 14px; box-shadow: var(--shadow); }
+.ticket::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; border-radius: 11px 0 0 11px; background: var(--river); }
+.ticket.possible::before { background: repeating-linear-gradient(180deg, var(--river) 0 6px, transparent 6px 10px); }
+.ticket b { font: 400 1.05rem/1.2 var(--f-head); }
+.ticket small { color: var(--ink-muted); font-size: 0.85rem; }
+.ticket .odds { position: absolute; right: 10px; top: -12px; width: 58px; height: 58px; display: grid; place-items: center; font: 400 1rem var(--f-head); color: var(--ink);
+  background: var(--hibiscus); border: 2px solid var(--ink); clip-path: polygon(50% 0, 61% 18%, 82% 10%, 80% 32%, 100% 40%, 85% 56%, 96% 77%, 74% 79%, 68% 100%, 50% 86%, 32% 100%, 26% 79%, 4% 77%, 15% 56%, 0 40%, 20% 32%, 18% 10%, 39% 18%); }
+.empty { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.empty .rat { width: 140px; }
+.season svg { width: 100%; height: auto; display: block; }
+.season text { font: 11px var(--f-head); fill: var(--ink-muted); }
+.note { font-size: 0.88rem; color: var(--ink-muted); margin: 0; }
+
 /* controls + legend */
 .controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; }
 .views { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -307,32 +326,31 @@ function renderHero() {
     ${cta}`;
 }
 
-function renderWindows() {
+function renderFloats() {
   const host = document.getElementById("tickets");
   const list = D.windows.slice(0, 5);
-  if (!list.length) { host.innerHTML = `<p class="note">No stretch reaches even possible odds in the next 12 months.</p>`; return; }
-  host.innerHTML = list.map(w => {
-    const we = weekendDays(w.start, w.end);
-    return `<button type="button" class="win" data-d="${w.start}"><b>${short(w.start)}${w.end !== w.start ? " – " + short(w.end) : ""}</b>
-      <span class="odds" ${w.band !== "good" ? 'style="color:var(--good)"' : ""}>${Math.round(w.p_avg * 100)}%</span>
-      <small>${w.band === "good" ? "Good odds" : "Possible"} · ${w.days} days · ${we} weekend days · peak ${Math.round(w.p_max * 100)}%</small></button>`;
-  }).join("");
+  if (!list.length) { host.innerHTML = `<div class="empty">${ratImg("sleep")}<p>Nothing on the horizon for 12 months.</p></div>`; return; }
+  host.innerHTML = list.map(w => `<button type="button" class="ticket ${w.band === "good" ? "good" : "possible"}" data-d="${w.start}">
+      <span class="odds">${pct(w.p_avg)}%</span>
+      <b>${short(w.start)}${w.end !== w.start ? " – " + short(w.end) : ""}</b>
+      <small>${w.band === "good" ? "Good odds" : "Possible"} · ${w.days} days · ${weekendDays(w.start, w.end)} weekend days · peak ${pct(w.p_max)}%</small>
+    </button>`).join("");
 }
 
 function renderSeason() {
   const W = 360, H = 100, pad = 26, bw = (W - pad) / 12;
   const y = v => H - 18 - v * (H - 34);
   const cur = parse(latest).m;
-  let g = `<line x1="${pad}" x2="${W}" y1="${y(0.5)}" y2="${y(0.5)}" stroke="var(--line)" stroke-dasharray="3 3"/><text x="${pad - 4}" y="${y(0.5) + 3}" text-anchor="end">50%</text>`;
+  let g = `<line x1="${pad}" x2="${W}" y1="${y(0.5)}" y2="${y(0.5)}" stroke="var(--sand)" stroke-dasharray="3 3"/><text x="${pad - 4}" y="${y(0.5) + 3}" text-anchor="end">50%</text>`;
   D.month_odds.forEach((v, m) => {
     if (v == null) return;
     const x = pad + m * bw + 2, w = bw - 4, peak = v >= 0.4;
-    g += `<rect x="${x}" y="${y(v)}" width="${w}" height="${y(0) - y(v)}" rx="3" fill="${peak ? "var(--yes)" : "var(--good)"}" opacity="${peak ? 1 : 0.5}"><title>${MONTHS[m]}: tubable on ${Math.round(v * 100)}% of days</title></rect>
+    g += `<rect x="${x}" y="${y(v)}" width="${w}" height="${y(0) - y(v)}" rx="3" fill="${peak ? "var(--river)" : "var(--lagoon)"}" stroke="var(--ink)" stroke-width="1.5"><title>${MONTHS[m]}: tubable on ${Math.round(v * 100)}% of days</title></rect>
       <text x="${x + w / 2}" y="${y(v) - 4}" text-anchor="middle">${Math.round(v * 100)}</text>
-      <text x="${x + w / 2}" y="${H - 4}" text-anchor="middle" ${m === cur ? 'style="fill:var(--tube);font-weight:600"' : ""}>${MONTHS[m][0]}</text>`;
+      <text x="${x + w / 2}" y="${H - 4}" text-anchor="middle" ${m === cur ? 'style="fill:var(--ink);font-weight:600"' : ""}>${MONTHS[m][0]}</text>`;
   });
   document.getElementById("season").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Share of tubable days by month since 2006">${g}</svg>
-    <p class="note">% of days tubable each month, 2006–${parse(latest).y}. Peak season is February to April, when the dam releases for dry-season rice.</p>`;
+    <p class="note">Peak: Feb–Apr, when the dam waters the dry-season rice. Bars show % of days tubable each month, 2006–${parse(latest).y}.</p>`;
 }
 
 let view = "next", year = parse(latest).y, selected = D.windows.length ? D.windows[0].start : D.forecast[0].date;
@@ -451,8 +469,8 @@ function render() {
   sel.addEventListener("change", () => { view = "year"; year = +sel.value; render(); });
   document.getElementById("v-next").addEventListener("click", () => { view = "next"; render(); });
   document.getElementById("months").addEventListener("click", ev => { const b = ev.target.closest(".day[data-d]"); if (b) select(b.dataset.d); });
-  document.getElementById("tickets").addEventListener("click", ev => { const b = ev.target.closest(".win"); if (b) { view = "next"; select(b.dataset.d); } });
+  document.getElementById("tickets").addEventListener("click", ev => { const b = ev.target.closest(".ticket"); if (b) { view = "next"; openDay(b.dataset.d, b); } });
   document.getElementById("hero").addEventListener("click", ev => { const b = ev.target.closest(".cta"); if (b) { view = "next"; openDay(b.dataset.d, b); } });
-  renderHero(); renderWindows(); renderSeason(); renderFoot(); render();
+  renderHero(); renderFloats(); renderSeason(); renderFoot(); render();
 })();
 </script>
