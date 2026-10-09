@@ -110,6 +110,6 @@ test("prefs survive a throwing or missing store", () => {
 });
 
 test("reliability picks the nearest backtest lead and band", () => {
-  assert.match(L.reliability("2026-01-09", L.classify("2026-01-09")), /^1 day ahead\..*tubable 85% of the time\.$/);
-  assert.match(L.reliability("2026-01-13", L.classify("2026-01-13")), /^5 days ahead\..*“possible”.*tubable 50%/);
+  assert.equal(L.reliability("2026-01-09", L.classify("2026-01-09")), "1 day out. Days we called “good odds” this far ahead were tubable 85% of the time.");
+  assert.equal(L.reliability("2026-01-13", L.classify("2026-01-13")), "5 days out. Days we called “possible” this far ahead were tubable 50% of the time.");
 });
