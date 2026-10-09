@@ -25,4 +25,6 @@ touch "$SITE/.nojekyll"
 git -C "$SITE" add -A
 git -C "$SITE" diff --cached --quiet || git -C "$SITE" commit -q -m "Publish $(date +%F)"
 git -C "$SITE" push -q origin gh-pages
+# GitHub Actions is off for this repo, so Pages won't rebuild on push by itself: ask for a build
+gh api -X POST repos/jonnyvector/mae-ngat-tube-calendar/pages/builds --silent
 echo "published https://jonnyvector.github.io/mae-ngat-tube-calendar/"
