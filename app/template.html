@@ -164,7 +164,7 @@ footer p { margin: 0; }
 <script>
 const D = /*__DATA__*/null;
 // logic:start
-// exports: T, classify, observed, weekendDays, sameDayHistory, reliability, LABEL, parse, utc, iso, isWeekend, fmt, toRiver, short, longDate
+// exports: T, classify, observed, weekendDays, sameDayHistory, reliability, LABEL, parse, utc, iso, isWeekend, fmt, toRiver, short, longDate, moodFor, RAT_ALT, heroVerdict, heroLine, ctaText, dayVerdict, monthStats, monthMood, monthTag, stepMonth, isSwipe, thaiDate, readPref, writePref, pct
 const T = D.thresholds;
 const DAY = 86400000;
 const hist = D.history;
@@ -226,6 +226,52 @@ function reliability(s, c) {
   const far = lead > 45 ? " This far ahead it mostly reflects the usual pattern for the date, so check back closer to the day." : "";
   return `${lead} day${lead === 1 ? "" : "s"} ahead. In tests on ${D.backtest.years ? D.backtest.years.join("–") : "past years"}, “${LABEL[c.kind].toLowerCase()}” days at this range turned out tubable ${r == null ? "–" : Math.round(r * 100) + "%"} of the time.${far}`;
 }
+const MOOD = { yes: "tubable", good: "good", maybe: "possible", no: "dry", unlikely: "dry" };
+const RAT_ALT = {
+  tubable: "River rat floating happily in an inner tube with a drink",
+  good: "River rat pumping up an inner tube",
+  possible: "River rat squinting up at the sky",
+  dry: "River rat sitting on dry rocks with a flat tube",
+  sleep: "River rat asleep in a hammock",
+};
+const moodFor = kind => MOOD[kind] || "sleep";
+const pct = p => Math.round(p * 100);
+
+const heroVerdict = n => n.tubable ? "Send it!" : "Rat's waiting.";
+const heroLine = n => `Dam's letting out <b>${fmt(n.outflow)}</b> million m³/day.`
+  + (n.tubable ? ` That's about <b>${fmt(toRiver(n.outflow), 1)}</b> m³/s into the river.` : "")
+  + ` Tubing starts at <b>${T.tube}</b>.`;
+const ctaText = w => w ? `Next float: ${short(w.start)}–${short(w.end)} · ${pct(w.p_avg)}%` : "";
+
+function dayVerdict(s, c) {
+  if (!c) return { title: "No data.", line: "No reading or forecast for this date." };
+  if (c.o) {
+    const est = c.o.derived ? " (estimated from the change in storage)" : "";
+    return c.kind === "yes"
+      ? { title: "It was flowing!", line: `Release ${fmt(c.o.out)} M m³${est} · about ${fmt(toRiver(c.o.out), 1)} m³/s into the river.` }
+      : { title: "Dry rocks.", line: `Release ${fmt(c.o.out)} M m³${est}. Tubing starts at ${T.tube}.` };
+  }
+  return { title: `${LABEL[c.kind]} · ${pct(c.f.p)}%`, line: `chance it's tubable${isWeekend(s) ? " on this weekend day" : ""}.` };
+}
+
+function monthStats(y, m) {
+  const st = { yes: 0, no: 0, good: 0, maybe: 0, unlikely: 0, none: 0 };
+  const n = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  for (let d = 1; d <= n; d++) { const c = classify(iso(y, m, d)); st[c ? c.kind : "none"]++; }
+  return st;
+}
+// most common day kind, ties going to the more tubable one; "none" only when nothing else
+const MOOD_ORDER = ["yes", "good", "maybe", "no", "unlikely"];
+const monthMood = st => MOOD_ORDER.reduce((best, k) => st[k] > (best === "none" ? 0 : st[best]) ? k : best, "none");
+const monthTag = st => [st.yes || st.no ? `${st.yes} tubable` : "", st.good ? `${st.good} good` : "", st.maybe ? `${st.maybe} maybe` : ""]
+  .filter(Boolean).join(" · ") || (st.unlikely ? "unlikely" : "no data");
+
+const stepMonth = (i, delta, n = 12) => Math.min(n - 1, Math.max(0, i + delta));
+const isSwipe = (dx, dy) => Math.abs(dx) > 40 && Math.abs(dx) > 1.5 * Math.abs(dy);
+const thaiDate = s => { const p = parse(s); return `${p.d} ${THAI_M[p.m]} ${p.y + 543}`; };
+
+function readPref(store, key, dflt) { try { return store?.getItem(key) ?? dflt; } catch { return dflt; } }
+function writePref(store, key, value) { try { store?.setItem(key, value); } catch { /* storage blocked: keep going */ } }
 // logic:end
 
 function gaugeSVG(value, high) {
