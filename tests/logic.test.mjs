@@ -113,3 +113,16 @@ test("reliability picks the nearest backtest lead and band", () => {
   assert.equal(L.reliability("2026-01-09", L.classify("2026-01-09")), "1 day out. Days we called “good odds” this far ahead were tubable 85% of the time.");
   assert.equal(L.reliability("2026-01-13", L.classify("2026-01-13")), "5 days out. Days we called “possible” this far ahead were tubable 50% of the time.");
 });
+
+test("todayISO uses Thai time", () => {
+  assert.equal(L.todayISO(new Date("2026-01-08T16:59:00Z")), "2026-01-08");   // 23:59 in Bangkok
+  assert.equal(L.todayISO(new Date("2026-01-08T17:00:00Z")), "2026-01-09");   // midnight in Bangkok
+});
+
+test("hero says today, or how old the reading is", () => {
+  assert.equal(L.heroDateLabel("2026-01-08", "2026-01-08"), "Today · Thu 8 Jan");
+  assert.equal(L.heroDateLabel("2026-01-08", "2026-01-10"), "Last reading · Thu 8 Jan");
+  assert.equal(L.heroVerdict({ tubable: true }, false), "Was flowing.");
+  assert.equal(L.heroVerdict({ tubable: false }, false), "Rat was waiting.");
+  assert.match(L.heroLine({ outflow: 0.42, tubable: false }, false), /^Dam was letting out <b>0\.42<\/b>/);
+});

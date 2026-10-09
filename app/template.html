@@ -44,7 +44,8 @@ button, select { font: inherit; color: inherit; }
 /* header + hero */
 .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
 .mark { font: 400 0.9rem var(--f-head); letter-spacing: 0.14em; }
-.top .read { margin-left: auto; font-size: 0.85rem; color: var(--ink-muted); }
+.when { font: 400 0.85rem var(--f-head); letter-spacing: 0.08em; text-transform: uppercase; background: var(--ink); color: var(--card); padding: 4px 10px; border-radius: 6px; justify-self: center; }
+@media (min-width: 980px) { .when { justify-self: start; } }
 .lead { display: grid; gap: 22px; }
 @media (min-width: 980px) { .lead { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; } }
 .hero { position: relative; overflow: hidden; justify-items: center; text-align: center; padding: 22px 18px 20px; }
@@ -183,7 +184,6 @@ tr.hl td { background: var(--weekend); }
   <header class="top">
     <span class="mark">MAE NGAT RIVER RATS</span>
     <span class="muted">เขื่อนแม่งัดสมบูรณ์ชล</span>
-    <span class="read" id="read"></span>
   </header>
   <div class="lead">
     <section class="hero card" id="hero" aria-live="polite"></section>
@@ -227,7 +227,7 @@ tr.hl td { background: var(--weekend); }
 <script>
 const D = /*__DATA__*/null;
 // logic:start
-// exports: T, classify, observed, weekendDays, sameDayHistory, reliability, LABEL, parse, utc, iso, isWeekend, fmt, toRiver, short, longDate, moodFor, RAT_ALT, heroVerdict, heroLine, ctaText, dayVerdict, monthStats, monthMood, monthTag, stepMonth, isSwipe, thaiDate, readPref, writePref, pct
+// exports: todayISO, heroDateLabel, T, classify, observed, weekendDays, sameDayHistory, reliability, LABEL, parse, utc, iso, isWeekend, fmt, toRiver, short, longDate, moodFor, RAT_ALT, heroVerdict, heroLine, ctaText, dayVerdict, monthStats, monthMood, monthTag, stepMonth, isSwipe, thaiDate, readPref, writePref, pct
 const T = D.thresholds;
 const DAY = 86400000;
 const hist = D.history;
@@ -300,10 +300,16 @@ const RAT_ALT = {
 const moodFor = kind => MOOD[kind] || "sleep";
 const pct = p => Math.round(p * 100);
 
-const heroVerdict = n => n.tubable ? "Send it!" : "Rat's waiting.";
-const heroLine = n => `Dam's letting out <b>${fmt(n.outflow)}</b> million m³/day.`
+const heroVerdict = (n, isToday = true) => n.tubable ? (isToday ? "Send it!" : "Was flowing.") : (isToday ? "Rat's waiting." : "Rat was waiting.");
+const heroLine = (n, isToday = true) => `${isToday ? "Dam's" : "Dam was"} letting out <b>${fmt(n.outflow)}</b> million m³/day.`
   + (n.tubable ? ` That's about <b>${fmt(toRiver(n.outflow), 1)}</b> m³/s into the river.` : "")
   + ` Tubing starts at <b>${T.tube}</b>.`;
+// the calendar date in Thailand (UTC+7) at `now`
+const todayISO = (now = new Date()) => new Date(now.getTime() + 7 * 3600e3).toISOString().slice(0, 10);
+const heroDateLabel = (latest, today) => {
+  const day = new Date(utc(latest)).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).replace(",", "");
+  return `${latest === today ? "Today" : "Last reading"} · ${day}`;
+};
 const ctaText = w => w ? `Next float: ${short(w.start)}–${short(w.end)} · ${pct(w.p_avg)}%` : "";
 
 function dayVerdict(s, c) {
@@ -355,13 +361,14 @@ function gaugeSVG(value, high) {
 
 function renderHero() {
   const n = D.now, w = D.windows[0];
-  document.getElementById("read").textContent = `Latest ${short(latest)}`;
+  const isToday = latest === todayISO();
   const cta = !n.tubable && w ? `<button type="button" class="btn go cta" data-d="${w.start}">${ctaText(w)} →</button>` : "";
   const pacific = D.enso_now ? ` · Pacific: ${D.enso_now.phase.replace("_", " ")} (${D.enso_now.oni > 0 ? "+" : ""}${D.enso_now.oni.toFixed(1)})` : "";
   document.getElementById("hero").innerHTML = `
     ${ratImg(n.tubable ? "tubable" : "dry", "big")}
-    <h1 class="verdict ${n.tubable ? "" : "dry"}">${heroVerdict(n)}</h1>
-    <p>${heroLine(n)}</p>
+    <p class="when">${heroDateLabel(latest, todayISO())}</p>
+    <h1 class="verdict ${n.tubable ? "" : "dry"}">${heroVerdict(n, isToday)}</h1>
+    <p>${heroLine(n, isToday)}</p>
     <div class="gauge">${gaugeSVG(n.outflow)}</div>
     <p class="foot-note">Dam ${fmt(n.pct, 0)}% full${pacific}</p>
     ${cta}`;
